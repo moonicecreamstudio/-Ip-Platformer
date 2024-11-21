@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    FacingDirection lastFacingDirection;
 
     public enum FacingDirection
     {
@@ -17,6 +18,7 @@ public class PlayerController : MonoBehaviour
     public float acceleration;
     public float deceleration;
     private Rigidbody2D playerRB;
+    Vector2 playerInput;
 
     // Start is called before the first frame update
     void Start()
@@ -31,7 +33,7 @@ public class PlayerController : MonoBehaviour
     {
         //The input from the player needs to be determined and then passed in the to the MovementUpdate which should
         //manage the actual movement of the character.
-        Vector2 playerInput = new Vector2(Input.GetAxisRaw("Horizontal"), 0);
+        playerInput = new Vector2(Input.GetAxisRaw("Horizontal"), 0);
         MovementUpdate(playerInput);
         Debug.Log("playerInput = " + playerInput);
     }
@@ -81,6 +83,16 @@ public class PlayerController : MonoBehaviour
 
     public FacingDirection GetFacingDirection()
     {
-        return FacingDirection.left;
+        if (playerInput.x > 0)
+        {
+            lastFacingDirection = FacingDirection.right;
+        }
+
+        if (playerInput.x < 0)
+        {
+            lastFacingDirection = FacingDirection.left;
+        }
+
+        return lastFacingDirection;
     }
 }
