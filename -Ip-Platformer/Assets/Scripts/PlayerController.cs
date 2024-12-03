@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour
     }
 
     public float timeToReachMaxSpeed;
+    public float initialTimeToReachMaxSpeed;
     public float maxSpeed;
     public float timeToDecelerate;
 
@@ -28,6 +29,10 @@ public class PlayerController : MonoBehaviour
 
     public float coyoteTimer = 0.5f;
     public float timerCounter = 0;
+
+    public bool isRunning;
+
+    public bool doubleJumpUsed;
 
     // Start is called before the first frame update
     void Start()
@@ -68,15 +73,9 @@ public class PlayerController : MonoBehaviour
         }
 
         // Move the character to the jumps
-        if (playerInput.y < 0)
-        {
-            // Do stuff to currentVelocity
-            currentVelocity += acceleration * Vector2.down * Time.deltaTime;
-        }
         if (playerInput.y > 0)
         {
             isJumping = true;
-
         }
 
         if (isJumping == true)
@@ -87,16 +86,15 @@ public class PlayerController : MonoBehaviour
                 jumpTimer += Time.deltaTime;
             }
         }
-        else
-        {
-            
-        }
 
-        // If the character is currently accelerating:
-        if (playerInput.x == 0)
+        if (IsGrounded() == false && doubleJumpUsed == false && jumpTimer >= 2)
         {
-            // Deaccelerate
-            currentVelocity.x = 0;
+            if (playerInput.y > 0)
+            {
+                currentVelocity.y = 0;
+                currentVelocity += jumpForce * 2 * Vector2.up * Time.deltaTime;
+                doubleJumpUsed = true;
+            }
         }
 
         if (IsGrounded() == false)
@@ -106,11 +104,55 @@ public class PlayerController : MonoBehaviour
         if (IsGrounded() == true)
         {
             jumpTimer = 0;
+            doubleJumpUsed = false;
         }
 
         if (playerInput.y == 0)
         {
             isJumping = false;
+        }
+
+        // Running controls
+
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            isRunning = true;
+            Debug.Log("Running.");
+        }
+        if (Input.GetKeyUp(KeyCode.LeftShift))
+        {
+            isRunning = false;
+            Debug.Log("Walking.");
+        }
+
+        if (isRunning == true)
+        {
+            timeToReachMaxSpeed = 0;
+        }
+        else
+        {
+            timeToReachMaxSpeed = initialTimeToReachMaxSpeed;
+        }
+
+        // Dashing controls
+
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            currentVelocity.x = 0;
+            currentVelocity += Vector2.left * 5;
+        }
+
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            currentVelocity.x = 0;
+            currentVelocity += Vector2.right * 5;
+        }
+
+        // If the character is currently accelerating:
+        if (playerInput.x == 0)
+        {
+            // Deaccelerate
+            currentVelocity.x = 0;
         }
 
         //RB handles the delta time stuff
