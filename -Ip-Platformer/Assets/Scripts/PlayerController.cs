@@ -20,6 +20,15 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D playerRB;
     Vector2 playerInput;
 
+    public float gravity;
+    public float jumpForce;
+    public bool isJumping = false;
+    public float jumpTimer = 0;
+    public float maxJumpTimer;
+
+    public float coyoteTimer = 0.5f;
+    public float timerCounter = 0;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -33,7 +42,7 @@ public class PlayerController : MonoBehaviour
     {
         //The input from the player needs to be determined and then passed in the to the MovementUpdate which should
         //manage the actual movement of the character.
-        playerInput = new Vector2(Input.GetAxisRaw("Horizontal"), 0);
+        playerInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         MovementUpdate(playerInput);
         Debug.Log("playerInput = " + playerInput);
     }
@@ -59,13 +68,49 @@ public class PlayerController : MonoBehaviour
         }
 
         // Move the character to the jumps
-        // Do stuff to currentVelocity
+        if (playerInput.y < 0)
+        {
+            // Do stuff to currentVelocity
+            currentVelocity += acceleration * Vector2.down * Time.deltaTime;
+        }
+        if (playerInput.y > 0)
+        {
+            isJumping = true;
+
+        }
+
+        if (isJumping == true)
+        {
+            if (jumpTimer <= maxJumpTimer)
+            {
+                currentVelocity += jumpForce * Vector2.up * Time.deltaTime;
+                jumpTimer += Time.deltaTime;
+            }
+        }
+        else
+        {
+            
+        }
 
         // If the character is currently accelerating:
         if (playerInput.x == 0)
         {
             // Deaccelerate
-            currentVelocity = Vector2.zero;
+            currentVelocity.x = 0;
+        }
+
+        if (IsGrounded() == false)
+        {
+            currentVelocity.y -= gravity * Time.deltaTime;
+        }
+        if (IsGrounded() == true)
+        {
+            jumpTimer = 0;
+        }
+
+        if (playerInput.y == 0)
+        {
+            isJumping = false;
         }
 
         //RB handles the delta time stuff
@@ -78,7 +123,21 @@ public class PlayerController : MonoBehaviour
     }
     public bool IsGrounded()
     {
-        return true;
+        bool playerGrounded = Physics2D.Raycast(transform.position, Vector2.down, 1.0f, LayerMask.GetMask("Ground"));
+
+        if (playerGrounded)
+        {
+            timerCounter = 0;
+            return true;
+        }
+        else
+        {
+            if (timerCounter == coyoteTimer)
+            {
+                timerCounter += Time.deltaTime;
+            }
+            return false;
+        }
     }
 
     public FacingDirection GetFacingDirection()
