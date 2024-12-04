@@ -11,26 +11,32 @@ public class PlayerController : MonoBehaviour
         left, right
     }
 
+    // Movement
+
     public float timeToReachMaxSpeed;
     public float initialTimeToReachMaxSpeed;
     public float maxSpeed;
     public float timeToDecelerate;
-
     public float acceleration;
     public float deceleration;
     private Rigidbody2D playerRB;
     Vector2 playerInput;
+
+    // Jump Parameters
 
     public float gravity;
     public float jumpForce;
     public bool isJumping = false;
     public float jumpTimer = 0;
     public float maxJumpTimer;
-
     public float coyoteTimer = 0.5f;
     public float timerCounter = 0;
 
+    // Running
+
     public bool isRunning;
+
+    // Double Jump
 
     public bool doubleJumpUsed;
 
@@ -72,7 +78,7 @@ public class PlayerController : MonoBehaviour
             currentVelocity += acceleration * Vector2.right * Time.deltaTime;
         }
 
-        // Move the character to the jumps
+        // Move the character up
         if (playerInput.y > 0)
         {
             isJumping = true;
@@ -87,6 +93,8 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        // Jump Controls
+
         if (IsGrounded() == false && doubleJumpUsed == false && jumpTimer >= 2)
         {
             if (playerInput.y > 0)
@@ -97,6 +105,7 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        // When the player is off the ground, gravity is applied to the character until it touches the ground
         if (IsGrounded() == false)
         {
             currentVelocity.y -= gravity * Time.deltaTime;
@@ -149,10 +158,18 @@ public class PlayerController : MonoBehaviour
         }
 
         // If the character is currently accelerating:
+        // Exponentially lower the speed
         if (playerInput.x == 0)
         {
             // Deaccelerate
-            currentVelocity.x = 0;
+            if (currentVelocity.x > 0)
+            {
+                currentVelocity.x -= Mathf.Pow(deceleration, 2) * Time.deltaTime;
+            }
+            if (currentVelocity.x < 0)
+            {
+                currentVelocity.x += Mathf.Pow(deceleration, 2) * Time.deltaTime;
+            }
         }
 
         //RB handles the delta time stuff
@@ -161,7 +178,14 @@ public class PlayerController : MonoBehaviour
 
     public bool IsWalking()
     {
-        return false;
+        if (playerInput.x != 0)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
     public bool IsGrounded()
     {
